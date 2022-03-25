@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<div class="container">
+  <br>
+  <h2>FTP Form</h2>
+      <form method="post" action="{% url 'ftp_home' %}" id="ftpform"><br>
+        {% csrf_token %}
+        <div class="form-group">
+          {% comment %} <label>Company Name</label><br> {% endcomment %}
+          <select id="cname" name="cname" class="browser-default custom-select custom-select-sm-3" style="width:500px">
+            <option selected disabled value="default">Select Company Name</option>
+            {% for i in data1 %}
+            <option>{{i}}</option>
+            {% endfor %}
+          </select>
+        </div><br>
+        <div class="row">
+          <!-- <div class="col"></div> -->
+          <div class="col">
+            {% comment %} <label>Mac Address</label> {% endcomment %}
+            <input style="width:500px;" type="text" class="form-control" id="mac" name="mac" placeholder="MAC Address"></div>
+          <div class="col"><p id="avail" style="color: red;font-size: 20px;display: inline;"></p></div>
+        </div><br><br>
+        <div class="form-group">
+          {% comment %} <label>FTP Username</label> {% endcomment %}
+          <input style="width:500px" type="text" class="form-control" id="username" name="username" placeholder="FTP Username">
+        </div><br><br>
+      </form>  
+      <div>
+      <button type="submit" id="submit" class="btn btn-primary">Submit</button>
+      <a href="{% url 'ftp_register' %}"><button class="btn btn-primary">Register</button></a>
+      <a href="{% url 'ftp_records' %}"><button class="btn btn-primary">Records</button></a>
+    </div>
+</div>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Submission Status</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+
+ // {% for msg in messages %}
+ //  swal('{{msg}}');
+ //  {% endfor %}
+
+
+
+  // var ips = JSON.parse("{{data|escapejs}}");
+  var ips=""
+  window.CSRF_TOKEN = "{{ csrf_token }}";
+
+$("#mac").keyup(function(){
+  if (ips != ""){        
+    var temp = $("#ip").val()
+    var ip = $("#mac").val();
+    if(ip == ""){$("#avail").html('')}
+    if(jQuery.inArray(ip,ips)!=-1){$("#avail").html('MAC Address already exists');} 
+    else{$("#avail").html('');}  
+  }
+  else{$("#avail").html('');}
+});
+
+
+$("#submit").click(function(){
+  if($("#cname").val()!=null && $("#mac").val()!="" && $("#username").val()!=""){
+    if($("#mac").val()!=""){
+      // var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      var macformat = /^([0-9A-F0-9a-f0]{2}[:-]){5}([0-9A-F0-9a-f]{2})$/;
+      if(($("#mac").val()).match(macformat)){
+        $("#mac").keyup();
+        if ($("#avail").html()==""){submitform()}
+        else{
+          event.preventDefault();
+          $('#modal-body').html('Enter Valid MAC address')
+          $('#exampleModal').modal('show');
+        }
+      }
+      else{
+      event.preventDefault();
+      $('#modal-body').html('Enter Valid MAC address')
+      $('#exampleModal').modal('show');
+    }
+    }
+    else{
+      event.preventDefault();
+      $('#modal-body').html('Enter Valid MAC address')
+      $('#exampleModal').modal('show');
+    }
+  }
+  else
+  {
+    $('#modal-body').html('Please fill all the fields')
+    $('#exampleModal').modal('show');
+  }
+})
+
+$("#cname").change(function () {
+  var cname = $("#cname").val();
+
+    $.ajax({
+        url: 'ftp_data',
+        type:'POST',
+        data: {csrfmiddlewaretoken: window.CSRF_TOKEN,cname : cname}
+        })
+        .done(function(response) {
+          ips = response.data;
+          // console.log(ips)
+          if ($("#mac").val()!=""){$("#mac").keyup();}        
+        })
+        .fail(function(){
+          console.log("failed cname");
+        })
+});
+
+
+function submitform(){
+  var cname = $("#cname").val()
+  var mac = $("#mac").val()
+  var username = $("#username").val() 
+
+  $.ajax({
+    url: 'ftp_home',
+    type:'POST',
+    data: {csrfmiddlewaretoken: window.CSRF_TOKEN,
+            cname:cname,
+            mac:mac,
+            username:username,
+          }
+  })
+  .done(function(response){
+    var result = response.result
+    $('#cname').val("default")
+    $('#mac').val("")
+    $('#username').val("")
+    if (result == "success")
+      {
+        $('#modal-body').html('Information Added Successfully')
+        $('#exampleModal').modal('show');
+      }
+      if (result == "failed")
+      {
+        $('#modal-body').html('Something Went Wrong')
+        $('#exampleModal').modal('show');
+      }
+  })
+}
+
+
+function ValidateMACaddress()
+ {
+    var ip = $("#mac").val()
+ }
+
+</script>
+</body>
+</html>
